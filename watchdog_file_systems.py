@@ -7,17 +7,21 @@ import time
 from random import randint
 import os
 
+git_home_path = "../career_hub"
+watch_path = "../career_hub/src"
+script_path = "../auto_push/script.sh"
+
 #### Git Commands
 def git_Script(c):
     value = randint(5, 7)
     time.sleep(value)
     commit_text = f"a20Tk{c}"
-    file1 = subprocess.run(["bash", "script.sh", commit_text])
+    subprocess.call(f'bash {script_path} {commit_text}', shell=True, cwd=git_home_path)
 
 class MyEventHandler(FileSystemEventHandler):
     counter = 0
     file_cache = {}
-   
+
     def on_modified(self, event):
         # print(self.file_cache)
         seconds = int(time.time())
@@ -29,17 +33,15 @@ class MyEventHandler(FileSystemEventHandler):
             git_Script(self.counter)
             self.counter+=1
         self.file_cache[key] = True
-        
+
         ###Terminate current session to empty file_cache
         if self.counter >= 10:
             #send control-c to terminal
             os.kill(os.getpid(), signal.SIGINT) #it also worked
 
 
-
 observer = Observer()
-path = "."
-observer.schedule(MyEventHandler(), path, recursive=False)
+observer.schedule(MyEventHandler(), watch_path, recursive=False)
 observer.start()
 try:
     while True:
