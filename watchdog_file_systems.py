@@ -41,7 +41,7 @@ class MyEventHandler(FileSystemEventHandler):
 
 
 observer = Observer()
-observer.schedule(MyEventHandler(), watch_path, recursive=False)
+observer.schedule(MyEventHandler(), watch_path, recursive=True) # monitor recursively to sub directories
 observer.start()
 try:
     while True:
