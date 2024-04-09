@@ -10,37 +10,43 @@ import os
 git_home_path = "../career_hub"
 watch_path = "../career_hub/src"
 script_path = "../auto_push/script.sh"
+sleep_time  = 7
 
 #### Git Commands
 def git_Script(c):
-    value = randint(5, 7)
-    time.sleep(value)
     commit_text = f"a20Tk{c}"
     subprocess.call(f'bash {script_path} {commit_text}', shell=True, cwd=git_home_path)
 
+class PausingObserver(Observer):
+    def dispatch_events(self, *args, **kwargs):
+        if not getattr(self, '_is_paused', False):
+            super(PausingObserver, self).dispatch_events(*args, **kwargs)
+
+    def pause(self):
+        self._is_paused = True
+
+    def resume(self):
+        time.sleep(randint(7, 10))
+        self.event_queue.queue.clear() ##clear all the queued events ##multiple event call problem solved
+        self._is_paused = False
+
 class MyEventHandler(FileSystemEventHandler):
     counter = 0
-    file_cache = {}
-
     def on_modified(self, event):
-        # print(self.file_cache)
-        seconds = int(time.time())
-        key = (seconds, event.src_path)
-        if key in self.file_cache:
-            return
-        elif event.is_directory:
-            # print(event)
-            git_Script(self.counter)
-            self.counter+=1
-        self.file_cache[key] = True
+        print("modified triggered\n")
+        observer.pause()
+        observer.resume()
 
-        ###Terminate current session to empty file_cache
+        git_Script(self.counter)
+        self.counter+=1
+
+        ###Terminate current session
         if self.counter >= 10:
             #send control-c to terminal
             os.kill(os.getpid(), signal.SIGINT) #it also worked
 
 
-observer = Observer()
+observer = PausingObserver()
 observer.schedule(MyEventHandler(), watch_path, recursive=True) # monitor recursively to sub directories
 observer.start()
 try:

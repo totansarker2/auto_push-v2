@@ -1,0 +1,4 @@
+$git_path: <../yourpath>
+$watch_path: <../yourpath>
+$push_deley: <10s>
+$script_path
